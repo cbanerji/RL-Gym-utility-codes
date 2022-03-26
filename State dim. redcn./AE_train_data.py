@@ -15,10 +15,11 @@ def create_train_data(seed, env, qty= 50000):
     torch.manual_seed(seed)
 
     #-------------------------Generate exploration data-------------
+    print("\n Collecting traning data... \n ")
     env = gym.make('InvertedPendulum-v2')
     observation = env.reset()
     tstep, t, obs_col = 0, 0, []
-    while tstep < 50000:
+    while tstep < qty:
         t += 1
         tstep +=1
         action = env.action_space.sample()
@@ -26,11 +27,10 @@ def create_train_data(seed, env, qty= 50000):
         obs_col.append(observation)
         print(tstep)
         if done:
-            print("Episode finished after {} timesteps".format(t))
+            #print("Episode finished after {} timesteps".format(t))
             observation = env.reset()
             t = 0
-    exp_dat = np.asarray(obs_col)
+    exp_dat = np.asarray(obs_col)# collection of all explored states/ observations
 
-    #Save the explored data
-    #np.savetxt("state_action_exp_dat_InvPend.csv", exp_dat, delimiter=",")
+    #np.savetxt("state_action_exp_dat_InvPend.csv", exp_dat, delimiter=",") #Save the explored data
     return exp_dat, exp_dat.shape
