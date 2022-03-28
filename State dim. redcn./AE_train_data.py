@@ -16,7 +16,7 @@ def create_train_data(seed, env, qty= 50000):
 
     #-------------------------Generate exploration data-------------
     print("\n Collecting traning data... \n ")
-    env = gym.make('InvertedPendulum-v2')
+    env = gym.make(env)
     observation = env.reset()
     tstep, t, obs_col = 0, 0, []
     while tstep < qty:

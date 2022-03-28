@@ -12,7 +12,7 @@ import AEncoder as tae
 if __name__=="__main__":
     '''
     env: the OpenAI gym environment # ID
-    seed: for replicable results, manually setting random seed
+    seed: for replicable results, manually set random seed
     epoch: no. of training epochs for the autoencoder.
     '''
     env = "InvertedPendulum-v2"
