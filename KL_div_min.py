@@ -1,7 +1,3 @@
-#KL_mvg_gd_2 but with choices to swap the two distributions as expert and learner
-# mean sampled from uniform gaussian -1,1
-# variance sampled from uniform gaussian 0,1
-
 import pandas as pd
 import numpy as np
 import tensorflow as tf
@@ -24,6 +20,9 @@ def kl_mvn(m_0,s_0,m_1,s_1):
     return .5 * (tr_term + det_term + quad_term - N)
 
 def dist_create():
+    '''
+    Generates two distributions for experimentation
+    '''
     #--Distribution 'P'
     M0 = np.random.uniform(-1,1,4).reshape(4,1) # Mean vector
     #create a Gaussian diagonal covariance matrix
@@ -62,52 +61,37 @@ def KL_helper(choice):
         func = switcher.get(choice)
         return func()
 
-#-Set optimizer type and the optimized objective----
-optimizer = tf.train.GradientDescentOptimizer(0.001)
-objective = kl_mvn(M_0,S_0,M_1,S_1) # The KL divergence calculation
-#------------------------------------------------------
-train = optimizer.minimize(objective)
-init = tf.global_variables_initializer()
-sess = tf.Session()
-sess.run(init)
-ful_sav=[]
-sav = []
-means =[]
-sigma=[]
-# set stopping criteria
-pc = 50
-# Get distributions
-M_0,S_0,M_1,S_1 = KL_helper(0) # choose '0' for KL(P|Q) and '1' for KL(Q|P)-----
-
-for iteration in range (1000):
-    vul = sess.run([train, objective])
-    ful_sav.append(vul[1])
-    fix = np.array(ful_sav)
-    if iteration % 10 == 0: # save only after each 100th iteration
-        sav.append(vul[1])
-        means.append(sess.run(M_1))
-        sigma.append(sess.run(S_1))
-        print('Objective='+str(vul[1]))
-
-        # Early stopping: Optimization stop at percentage(pc)
-        if fix[iteration] <= fix[0]-((pc/100)*fix[0]):
-            break
-
-
-# Plot the optimization of distribution parameters to minimize KL divergence---------------
-# List to ndarray
-mu = np.array(means)
-sig = np.array(sigma)
-
-m = np.linspace(1,4,4)
-for i in range (mu.shape[0]):
-   plt.plot(m,mu[i],'-ro')
-plt.plot(m,M0,'-ko')
-plt.plot(m,M1,'--b')
-plt.xlabel("Dimensions")
-plt.ylabel("Mean values")
-plt.show()
-#-------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    pass
+    pc = 90 # set stopping criteria parameter
+    # Get distributions
+    M_0,S_0,M_1,S_1 = KL_helper(0) # choose '0' for KL(P|Q) and '1' for KL(Q|P)-----
+
+    #-Set optimizer type and the optimized objective----
+    optimizer = tf.train.GradientDescentOptimizer(0.001)
+    objective = kl_mvn(M_0,S_0,M_1,S_1) # The KL divergence calculation
+
+    train = optimizer.minimize(objective)
+    init = tf.global_variables_initializer()
+    sess = tf.Session()
+    sess.run(init)
+    ful_sav=[]
+    sav = []
+    means =[]
+    sigma=[]
+
+    for iter in range (10000):
+        vul = sess.run([train, objective])
+        ful_sav.append(vul[1])
+        fix = np.array(ful_sav)
+        if iter % 10 == 0: # save only after each 100th iteration
+            sav.append(vul[1])
+            #record shift of gaussian parameters due to divergence minimization
+            means.append(sess.run(M_1))
+            sigma.append(sess.run(S_1))
+            print('Objective='+str(vul[1]))
+            print('Vul'+str(vul))
+
+            # Early stopping: Optimization stop at percentage(pc)
+            if fix[iter] <= fix[0]-((pc/100)*fix[0]):
+                break
